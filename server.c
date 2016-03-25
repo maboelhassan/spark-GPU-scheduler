@@ -6,6 +6,18 @@
 
 
 #define MESSAGE_LENGTH 10
+#define MAX_MESSAGE_LENGTH 134217728
+#define INPUT_MESSAGE_LENGTH 67108864
+#define OUTPUT_MESSAGE_LENGTH 3145728
+#define GPU_COUNT 1
+#define GPU_STREAM_COUNT 4 
+
+
+struct request_info{
+      int thread_number;
+      int socket;
+};
+
 
 void * function(void *socket_arg){
    int check;
@@ -35,9 +47,34 @@ void * function(void *socket_arg){
    pthread_exit(NULL);
 }
 
+void * process(void * arg){
+      short buffer[INPUT_MESSAGE_LENGTH / 2];
+      int check_operation ;
+      struct request_info * curr_request_info = (struct request_info *) arg;
+      int thread_number = curr_request_info->thread_number;
+      int socket = curr_request_info->socket;
+      int GPU_device = thread_number % GPU_COUNT ;
+      int GPU_stream = thread_number % GPU_STREAM_COUNT;
+      
+     
+      check_operation = read(socket, buffer, INPUT_MESSAGE_LENGTH);
+      if(check_operation < 0){
+            perror("error reading data");
+            exit(1);
+      }
+      
+      
+      
+      
+}
+
+
+
+
 
 
 int main( int argc, char *argv[] ) {
+   int thread_count = 0 ;
    int socket_file_desc, new_socket_file_desc, port_number, clilen;
    char buffer[256];
    struct sockaddr_in serv_addr, cli_addr;
@@ -77,7 +114,14 @@ int main( int argc, char *argv[] ) {
          perror("ERROR while accepting connections");
          exit(1);
       }
-      
+        
+        
+        struct request_info req_info ;
+        req_info.thread_number = thread_count ;   
+        req_info.socket = new_socket_file_desc ; 
+        thread_count ++;
+        
+        
 	  pthread_t thread ;
 	  int check_creation = pthread_create(&thread, NULL,function, (void *) new_socket_file_desc );
 	  if(check_creation){
