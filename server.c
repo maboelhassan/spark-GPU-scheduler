@@ -4,22 +4,31 @@
 #include <netinet/in.h>
 #include <string.h>
 
-void * function(void *socket){
+
+#define MESSAGE_LENGTH 10
+
+void * function(void *socket_arg){
    int check;
-   char buffer[256];
-   bzero(buffer,256);
-   int sock = (int)socket;
-   check = read(sock,buffer,255);
+   int buffer [MESSAGE_LENGTH];
+   bzero(buffer,MESSAGE_LENGTH);
+   int sock = (int)socket_arg;
+   check = read(sock,buffer,MESSAGE_LENGTH);
+  
    
    if (check < 0) {
-      perror("error couldn't read from the socket");
+      perror("error couldn't read from the socket_arg");
       exit(1);
    }
+ 
    
-   check = write(sock,"I got your message",18);
+   int another_message [MESSAGE_LENGTH];
+   // fill another_message with the results of processing later on
+   check = write(sock, another_message, MESSAGE_LENGTH);
+   
+   
    
    if (check < 0) {
-      perror("erro couldn't write to the socket");
+      perror("erro couldn't write to the socket_arg");
       exit(1);
    }
    
@@ -38,7 +47,7 @@ int main( int argc, char *argv[] ) {
    socket_file_desc = socket(AF_INET, SOCK_STREAM, 0);
    
    if (socket_file_desc < 0) {
-      perror("error can't open socket");
+      perror("error can't open socket_arg");
       exit(1);
    }
 
