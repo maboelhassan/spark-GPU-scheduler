@@ -11,7 +11,7 @@
 #define OUTPUT_MESSAGE_LENGTH 3145728
 #define GPU_COUNT 1
 #define GPU_STREAM_COUNT 4 
-
+#define MAX_THREADS_COUNT 100
 
 struct request_info{
       int thread_number;
@@ -65,6 +65,7 @@ void * process(void * arg){
       
       
       
+      pthread_exit(NULL);
       
 }
 
@@ -106,25 +107,32 @@ int main( int argc, char *argv[] ) {
    listen(socket_file_desc,5);
    clilen = sizeof(cli_addr);
    
+   pthread_t threads[MAX_THREADS_COUNT];
+   struct request_info req_info_arr[MAX_THREADS_COUNT];
+   
+   
 
    while (1) {
       new_socket_file_desc = accept(socket_file_desc, (struct sockaddr *) &cli_addr, &clilen);
 		
       if (new_socket_file_desc < 0) {
-         perror("ERROR while accepting connections");
+         perror("error can't accept connections");
          exit(1);
       }
         
         
-        struct request_info req_info ;
-        req_info.thread_number = thread_count ;   
-        req_info.socket = new_socket_file_desc ; 
+        int current_thread_number = thread_count ;
+        req_info_arr[current_thread_number].thread_number = thread_count ;   
+        req_info_arr[current_thread_number].socket = new_socket_file_desc ; 
         thread_count ++;
+        thread_count = thread_count % MAX_THREADS_COUNT ;
         
         
-	  pthread_t thread ;
-	  int check_creation = pthread_create(&thread, NULL,function, (void *) new_socket_file_desc );
-	  if(check_creation){
+	  //pthread_t thread ;
+	  //int check_creation = pthread_create(&thread, NULL,function, (void *) new_socket_file_desc );
+        int check_operation = pthread_create(&threads[current_thread_number], NULL, process, (void *)&req_info_arr[current_thread_number]);
+        
+	  if(check_operation){
 		  printf("error couldn't create thread\n");
 	  }
 		
