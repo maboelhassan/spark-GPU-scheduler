@@ -16,6 +16,8 @@
 struct request_info{
       int thread_number;
       int socket;
+      int kafka_message_id;
+      int log_id;
 };
 
 
@@ -53,8 +55,14 @@ void * process(void * arg){
       struct request_info * curr_request_info = (struct request_info *) arg;
       int thread_number = curr_request_info->thread_number;
       int socket = curr_request_info->socket;
+      int kafka_message_id = curr_request_info->kafka_message_id;
       int GPU_device = thread_number % GPU_COUNT ;
       int GPU_stream = thread_number % GPU_STREAM_COUNT;
+      
+      int log_id = request_info->log_id;
+      
+      // continue with the logging here
+      
       
      
       check_operation = read(socket, buffer, INPUT_MESSAGE_LENGTH);
@@ -63,8 +71,12 @@ void * process(void * arg){
             exit(1);
       }
       
-      
-      
+      int message_length_shorts = INPUT_MESSAGE_LENGTH / 2 ;
+      int results_count = 0 ;
+      int output_message_doubles = output_message_doubles / 8 ;
+      double results[output_message_doubles];
+      entry(buffer, results, &results_count, kafka_message_id, message_length_shorts);
+
       pthread_exit(NULL);
       
 }
@@ -75,6 +87,7 @@ void * process(void * arg){
 
 
 int main( int argc, char *argv[] ) {
+   int log_counter = 0 ;
    int thread_count = 0 ;
    int socket_file_desc, new_socket_file_desc, port_number, clilen;
    char buffer[256];
@@ -123,8 +136,14 @@ int main( int argc, char *argv[] ) {
         
         int current_thread_number = thread_count ;
         req_info_arr[current_thread_number].thread_number = thread_count ;   
-        req_info_arr[current_thread_number].socket = new_socket_file_desc ; 
+        req_info_arr[current_thread_number].socket = new_socket_file_desc ;
+        /*
+            kafka_message_id is always set to zero. needs to be handled later
+        */
+        req_info_arr[current_thread_number].kafka_message_id = 0;
+        req_info_arr[current_thread_number].log_id = log_counter;
         thread_count ++;
+        log_counter  ++;
         thread_count = thread_count % MAX_THREADS_COUNT ;
         
         
@@ -135,6 +154,6 @@ int main( int argc, char *argv[] ) {
 	  if(check_operation){
 		  printf("error couldn't create thread\n");
 	  }
-		
+	  log_counter ++ ;
    }
 }
