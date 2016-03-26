@@ -3,7 +3,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <string.h>
-
+#include <cuda_kernels.cuh>
 
 #define MESSAGE_LENGTH 10
 #define MAX_MESSAGE_LENGTH 134217728
