@@ -1,3 +1,4 @@
 target/
 stuff/
 cuda_kernels.cu
+.vscode/
