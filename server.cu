@@ -3,7 +3,8 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <string.h>
-#include <unistd.h> 
+#include <unistd.h>
+#include <pthread.h>
 #include "cuda_kernels.cuh"
 
 #define MESSAGE_LENGTH 10
