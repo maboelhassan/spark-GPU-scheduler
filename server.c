@@ -3,7 +3,8 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <string.h>
-#include <cuda_kernels.cuh>
+#include <unistd.h> 
+#include "cuda_kernels.cuh"
 
 #define MESSAGE_LENGTH 10
 #define MAX_MESSAGE_LENGTH 134217728
@@ -21,33 +22,33 @@ struct request_info{
 };
 
 
-void * function(void *socket_arg){
-   int check;
-   int buffer [MESSAGE_LENGTH];
-   bzero(buffer,MESSAGE_LENGTH);
-   int sock = (int)socket_arg;
-   check = read(sock,buffer,MESSAGE_LENGTH);
+// void * function(void *socket_arg){
+//    int check;
+//    int buffer [MESSAGE_LENGTH];
+//    bzero(buffer,MESSAGE_LENGTH);
+//    int sock = (int)socket_arg;
+//    check = read(sock,buffer,MESSAGE_LENGTH);
   
    
-   if (check < 0) {
-      perror("error couldn't read from the socket_arg");
-      exit(1);
-   }
+//    if (check < 0) {
+//       perror("error couldn't read from the socket_arg");
+//       exit(1);
+//    }
  
    
-   int another_message [MESSAGE_LENGTH];
-   // fill another_message with the results of processing later on
-   check = write(sock, another_message, MESSAGE_LENGTH);
+//    int another_message [MESSAGE_LENGTH];
+//    // fill another_message with the results of processing later on
+//    check = write(sock, another_message, MESSAGE_LENGTH);
    
    
    
-   if (check < 0) {
-      perror("erro couldn't write to the socket_arg");
-      exit(1);
-   }
+//    if (check < 0) {
+//       perror("erro couldn't write to the socket_arg");
+//       exit(1);
+//    }
    
-   pthread_exit(NULL);
-}
+//    pthread_exit(NULL);
+// }
 
 void * process(void * arg){
       short buffer[INPUT_MESSAGE_LENGTH / 2];
@@ -59,7 +60,7 @@ void * process(void * arg){
       int GPU_device = thread_number % GPU_COUNT ;
       int GPU_stream = thread_number % GPU_STREAM_COUNT;
       
-      int log_id = request_info->log_id;
+      int log_id = curr_request_info->log_id;
       
       // continue with the logging here
       
@@ -73,12 +74,11 @@ void * process(void * arg){
       
       int message_length_shorts = INPUT_MESSAGE_LENGTH / 2 ;
       int results_count = 0 ;
-      int output_message_doubles = output_message_doubles / 8 ;
+      int output_message_doubles = OUTPUT_MESSAGE_LENGTH / 8 ;
       double results[output_message_doubles];
       entry(buffer, results, &results_count, kafka_message_id, message_length_shorts);
 
       pthread_exit(NULL);
-      
 }
 
 
@@ -97,7 +97,7 @@ int main( int argc, char *argv[] ) {
    
    socket_file_desc = socket(AF_INET, SOCK_STREAM, 0);
    
-   if (socket_file_desc < 0) {
+   if (socket_file_desc < 0) {      
       perror("error can't open socket_arg");
       exit(1);
    }
@@ -117,7 +117,7 @@ int main( int argc, char *argv[] ) {
       exit(1);
    }
 
-   listen(socket_file_desc,5);
+   listen(socket_file_desc,15);
    clilen = sizeof(cli_addr);
    
    pthread_t threads[MAX_THREADS_COUNT];
