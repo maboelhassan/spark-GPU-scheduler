@@ -89,7 +89,8 @@ void * process(void * arg){
 int main( int argc, char *argv[] ) {
    int log_counter = 0 ;
    int thread_count = 0 ;
-   int socket_file_desc, new_socket_file_desc, port_number, clilen;
+   int socket_file_desc, new_socket_file_desc, port_number;
+   socklen_t clilen;
    char buffer[256];
    struct sockaddr_in serv_addr, cli_addr;
    int n, pid;
