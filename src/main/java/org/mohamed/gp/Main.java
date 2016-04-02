@@ -40,16 +40,13 @@ public class Main {
 		// System.out.println("*********************************");
 		// }
 
-		long start = System.currentTimeMillis();
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 1; i++) {
 
-			Th th = new Th(i);
-
-			Thread thread = new Thread(th, "name");
+			// Th th = new Th(i);
+			ServerTest serverTest = new ServerTest(i);
+			Thread thread = new Thread(serverTest, "name");
 			thread.start();
 		}
-		long end = System.currentTimeMillis();
-		System.out.println("total time is " + (end - start));
 
 	}
 

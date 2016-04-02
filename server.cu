@@ -51,8 +51,29 @@ struct request_info{
 //    pthread_exit(NULL);
 // }
 
+
+int recv_all(int sockfd, void *buffer, int length, int flags){
+    int current_length = length;
+    char  *buffer_ptr = (char*) buffer;
+    int bytes_count = 0 ;
+    while (current_length > 0){
+        int bytes_read = recv(sockfd, buffer_ptr, current_length, flags);
+        
+        if(bytes_read <= 0){
+              return bytes_read;
+        }
+
+        current_length -= bytes_read; 
+        buffer_ptr += bytes_read;
+        bytes_count += bytes_read;
+    }
+    return bytes_count;
+}
+
+
 void * process(void * arg){
-      short buffer[INPUT_MESSAGE_LENGTH / 2];
+      //short buffer[INPUT_MESSAGE_LENGTH / 2];
+      short * buffer = (short *) malloc(INPUT_MESSAGE_LENGTH + 10);
       int check_operation ;
       struct request_info * curr_request_info = (struct request_info *) arg;
       int thread_number = curr_request_info->thread_number;
@@ -65,12 +86,11 @@ void * process(void * arg){
       
       // continue with the logging here
       
-      
-     
-      check_operation = read(socket, buffer, INPUT_MESSAGE_LENGTH);
-      if(check_operation < 0){
-            perror("error reading data");
-            exit(1);
+      printf("before accepting data");
+
+      int bytes_count = recv_all(socket, buffer, INPUT_MESSAGE_LENGTH , 0);
+      if(bytes_count <= 0){
+            perror("error reading data from socket");
       }
       
       int message_length_shorts = INPUT_MESSAGE_LENGTH / 2 ;
@@ -94,7 +114,6 @@ int main( int argc, char *argv[] ) {
    socklen_t clilen;
    char buffer[256];
    struct sockaddr_in serv_addr, cli_addr;
-   int n, pid;
    
    
    socket_file_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -128,8 +147,10 @@ int main( int argc, char *argv[] ) {
    
 
    while (1) {
+      printf("before staring thread %d\n",thread_count);
       new_socket_file_desc = accept(socket_file_desc, (struct sockaddr *) &cli_addr, &clilen);
-		
+	
+      printf("after starting thread %d\n",thread_count);	
       if (new_socket_file_desc < 0) {
          perror("error can't accept connections");
          exit(1);
@@ -149,9 +170,7 @@ int main( int argc, char *argv[] ) {
         thread_count = thread_count % MAX_THREADS_COUNT ;
         
         
-	  //pthread_t thread ;
-	  //int check_creation = pthread_create(&thread, NULL,function, (void *) new_socket_file_desc );
-        int check_operation = pthread_create(&threads[current_thread_number], NULL, process, (void *)&req_info_arr[current_thread_number]);
+	  int check_operation = pthread_create(&threads[current_thread_number], NULL, process, (void *)&req_info_arr[current_thread_number]);
         
 	  if(check_operation){
 		  printf("error couldn't create thread\n");
