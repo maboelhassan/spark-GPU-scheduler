@@ -22,36 +22,6 @@ struct request_info{
       int log_id;
 };
 
-
-// void * function(void *socket_arg){
-//    int check;
-//    int buffer [MESSAGE_LENGTH];
-//    bzero(buffer,MESSAGE_LENGTH);
-//    int sock = (int)socket_arg;
-//    check = read(sock,buffer,MESSAGE_LENGTH);
-  
-   
-//    if (check < 0) {
-//       perror("error couldn't read from the socket_arg");
-//       exit(1);
-//    }
- 
-   
-//    int another_message [MESSAGE_LENGTH];
-//    // fill another_message with the results of processing later on
-//    check = write(sock, another_message, MESSAGE_LENGTH);
-   
-   
-   
-//    if (check < 0) {
-//       perror("erro couldn't write to the socket_arg");
-//       exit(1);
-//    }
-   
-//    pthread_exit(NULL);
-// }
-
-
 int recv_all(int sockfd, void *buffer, int length, int flags){
     int current_length = length;
     char  *buffer_ptr = (char*) buffer;
@@ -98,6 +68,9 @@ void * process(void * arg){
       int output_message_doubles = OUTPUT_MESSAGE_LENGTH / 8 ;
       double results[output_message_doubles];
       entry(buffer, results, &results_count, kafka_message_id, message_length_shorts);
+
+      // handle sending the results back
+      // handle the freeing of resources
 
       pthread_exit(NULL);
 }
