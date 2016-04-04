@@ -44,26 +44,19 @@ public class ServerTest implements Runnable {
 			BufferedReader bufferedReader = new BufferedReader(
 					new InputStreamReader(socket.getInputStream()));
 
-			String shit = new String(data);
-
-			System.out.println("will send");
-			// byte[] arr = { 1, 2 , 3 , 5, 6, 6, 7 ,7 };
+			
 			long startTime = System.currentTimeMillis();
 			socket.getOutputStream().write(data, 0, data.length);
 
 			ObjectOutputStream outputStream = new ObjectOutputStream(
 					socket.getOutputStream());
-			// outputStream.writeObject(data);
-			// PrintWriter writer = new PrintWriter(socket.getOutputStream());
-
-			// outputStream.writeObject(data);
-			long endTime = System.currentTimeMillis();
-			System.out.println("Time is " + (endTime - startTime));
-			System.out.println("here");
+			
 			byte[] resultArr = new byte[65536 * 6];
 			socket.getInputStream().read(resultArr, 0, 65536 * 6);
-
-			System.out.println("after receiving results");
+			long endTime = System.currentTimeMillis();
+			System.out.println("Time is " + (endTime - startTime));
+			
+			
 			DoubleBuffer doubleBuffer = ByteBuffer.wrap(resultArr)
 					.order(ByteOrder.LITTLE_ENDIAN).asDoubleBuffer();
 			double doubleResult[] = new double[doubleBuffer.remaining()];

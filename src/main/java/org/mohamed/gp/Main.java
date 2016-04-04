@@ -40,11 +40,12 @@ public class Main {
 		// System.out.println("*********************************");
 		// }
 
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 10; i++) {
 
-			// Th th = new Th(i);
+			 //Th th = new Th(i);
 			ServerTest serverTest = new ServerTest(i);
 			Thread thread = new Thread(serverTest, "name");
+			//Thread thread = new Thread(th, "name");
 			thread.start();
 		}
 
