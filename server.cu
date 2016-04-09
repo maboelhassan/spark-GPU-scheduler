@@ -14,12 +14,14 @@
 #define GPU_COUNT 1
 #define GPU_STREAM_COUNT 4 
 #define MAX_THREADS_COUNT 100
+#define streams_count 4
 
 struct request_info{
       int thread_number;
       int socket;
       int kafka_message_id;
       int log_id;
+      cudaStream_t * stream;
 };
 
 int recv_all(int sockfd, void *buffer, int length, int flags){
@@ -50,8 +52,10 @@ void * process(void * arg){
       int socket = curr_request_info->socket;
       int kafka_message_id = curr_request_info->kafka_message_id;
       int GPU_device = thread_number % GPU_COUNT ;
-      int GPU_stream = thread_number % GPU_STREAM_COUNT;
+      //int GPU_stream = thread_number % GPU_STREAM_COUNT;
       
+      
+      cudaStream_t * GPU_stream = curr_request_info->stream;
       int log_id = curr_request_info->log_id;
       
       // continue with the logging here
@@ -67,7 +71,7 @@ void * process(void * arg){
       int results_count = 0 ;
       int output_message_doubles = OUTPUT_MESSAGE_LENGTH / 8 ;
       double results[output_message_doubles];
-      entry(buffer, results, &results_count, kafka_message_id, message_length_shorts);
+      entry(buffer, results, &results_count, kafka_message_id, message_length_shorts, GPU_stream);
 
       // handle sending the results back
       // handle the freeing of resources
@@ -115,7 +119,17 @@ int main( int argc, char *argv[] ) {
    clilen = sizeof(cli_addr);
    
    pthread_t threads[MAX_THREADS_COUNT];
+   cudaStream_t streams[streams_count];
    struct request_info req_info_arr[MAX_THREADS_COUNT];
+   
+   int i;
+   for(i =0 ; i< streams_count; i++){
+      cudaError_t error = cudaStreamCreate(&streams[i]);
+      if(error != cudaSuccess){
+          printf("Error while creating stream %d error is %s",i,cudaGetErrorString(error));
+      }
+   }
+   
    
    
 
@@ -138,6 +152,8 @@ int main( int argc, char *argv[] ) {
         */
         req_info_arr[current_thread_number].kafka_message_id = 0;
         req_info_arr[current_thread_number].log_id = log_counter;
+        req_info_arr[current_thread_number].stream = &streams[current_thread_number % streams_count];
+        
         thread_count ++;
         log_counter  ++;
         thread_count = thread_count % MAX_THREADS_COUNT ;
@@ -151,4 +167,3 @@ int main( int argc, char *argv[] ) {
 	  log_counter ++ ;
    }
 }
-//
