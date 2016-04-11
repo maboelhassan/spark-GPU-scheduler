@@ -43,6 +43,30 @@ int recv_all(int sockfd, void *buffer, int length, int flags){
 }
 
 
+int send_all(int sockfd, void *buffer, int length, int flags){
+    int current_length = length;
+    char *buffer_ptr = (char*)buffer;
+    int bytes_count = 0;
+    while(current_length > 0 ){
+        int bytes_sent = send(sockfd, buffer_ptr, current_length, flags);
+        
+        if(bytes_count == 0){
+            return bytes_count;
+        }
+        
+        current_length -=bytes_sent;
+        buffer_ptr += bytes_sent;
+        bytes_count -= bytes_sent;
+    }
+    
+    return bytes_count;
+  
+  
+}
+
+
+
+
 void * process(void * arg){
       //short buffer[INPUT_MESSAGE_LENGTH / 2];
       short * buffer = (short *) malloc(INPUT_MESSAGE_LENGTH + 10);
@@ -71,10 +95,14 @@ void * process(void * arg){
       int results_count = 0 ;
       int output_message_doubles = OUTPUT_MESSAGE_LENGTH / 8 ;
       double results[output_message_doubles];
+      int i;
+      for(i =0 ; i< output_message_doubles; i++){
+          results[i] = -1;
+      }
       entry(buffer, results, &results_count, kafka_message_id, message_length_shorts, GPU_stream);
 
-      // handle sending the results back
-      // handle the freeing of resources
+      send_all(socket, results, OUTPUT_MESSAGE_LENGTH, 0);
+      free(buffer);
 
       pthread_exit(NULL);
 }

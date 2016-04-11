@@ -51,8 +51,8 @@ public class ServerTest implements Runnable {
 			ObjectOutputStream outputStream = new ObjectOutputStream(
 					socket.getOutputStream());
 			
-			byte[] resultArr = new byte[65536 * 6];
-			socket.getInputStream().read(resultArr, 0, 65536 * 6);
+			byte[] resultArr = new byte[65536 * 6 * 8];
+			socket.getInputStream().read(resultArr, 0, 65536 * 6 * 8);
 			long endTime = System.currentTimeMillis();
 			System.out.println("Time is " + (endTime - startTime));
 			
