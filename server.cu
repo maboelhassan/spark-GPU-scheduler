@@ -58,17 +58,13 @@ int send_all(int sockfd, void *buffer, int length, int flags){
         buffer_ptr += bytes_sent;
         bytes_count -= bytes_sent;
     }
-    
     return bytes_count;
-  
-  
 }
 
 
 
 
 void * process(void * arg){
-      //short buffer[INPUT_MESSAGE_LENGTH / 2];
       short * buffer = (short *) malloc(INPUT_MESSAGE_LENGTH + 10);
       int check_operation ;
       struct request_info * curr_request_info = (struct request_info *) arg;
@@ -76,16 +72,13 @@ void * process(void * arg){
       int socket = curr_request_info->socket;
       int kafka_message_id = curr_request_info->kafka_message_id;
       int GPU_device = thread_number % GPU_COUNT ;
-      //int GPU_stream = thread_number % GPU_STREAM_COUNT;
-      
-      
+
       cudaStream_t * GPU_stream = curr_request_info->stream;
       int log_id = curr_request_info->log_id;
       
       // continue with the logging here
       
       printf("before accepting data");
-
       int bytes_count = recv_all(socket, buffer, INPUT_MESSAGE_LENGTH , 0);
       if(bytes_count <= 0){
             perror("error reading data from socket");
@@ -99,17 +92,12 @@ void * process(void * arg){
       for(i =0 ; i< output_message_doubles; i++){
           results[i] = -1;
       }
+	
       entry(buffer, results, &results_count, kafka_message_id, message_length_shorts, GPU_stream);
-
       send_all(socket, results, OUTPUT_MESSAGE_LENGTH, 0);
       free(buffer);
-
       pthread_exit(NULL);
 }
-
-
-
-
 
 
 int main( int argc, char *argv[] ) {
@@ -122,17 +110,13 @@ int main( int argc, char *argv[] ) {
    
    
    socket_file_desc = socket(AF_INET, SOCK_STREAM, 0);
-   
    if (socket_file_desc < 0) {      
       perror("error can't open socket_arg");
       exit(1);
    }
 
-
-
    bzero((char *) &serv_addr, sizeof(serv_addr));
    port_number = 5001;
-   
    serv_addr.sin_family = AF_INET;
    serv_addr.sin_addr.s_addr = INADDR_ANY;
    serv_addr.sin_port = htons(port_number);
@@ -157,9 +141,6 @@ int main( int argc, char *argv[] ) {
           printf("Error while creating stream %d error is %s",i,cudaGetErrorString(error));
       }
    }
-   
-   
-   
 
    while (1) {
       printf("before staring thread %d\n",thread_count);
@@ -170,8 +151,7 @@ int main( int argc, char *argv[] ) {
          perror("error can't accept connections");
          exit(1);
       }
-        
-        
+            
         int current_thread_number = thread_count ;
         req_info_arr[current_thread_number].thread_number = thread_count ;   
         req_info_arr[current_thread_number].socket = new_socket_file_desc ;
